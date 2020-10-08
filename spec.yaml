@@ -1,0 +1,605 @@
+swagger: "2.0"
+info:
+  description: "Documentación de la API realizada para el TP3 del curso Desarrollo Web Full Stack de Acámica. Alumno: Matías A. Cruz"
+  version: "1.0.0"
+  title: "Delilah Restó"
+  contact: 
+    email: "matcuz@gmail.com"
+host: "localhost"
+basePath: "/delilah/api"
+tags:
+- name: "users"
+  description: "Listado y ABM de usuarios"
+- name: "dishes"
+  description: "Listado y ABM de platos"
+- name: "orders"
+  description: "Listado y operación con órdenes"
+schemes:
+- "http"
+paths:
+  /users/add:
+    post:
+      tags:
+        - "users"
+      summary: "Agregar un nuevo usuario"
+      operationId: "addUser"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: Body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              alias:
+                type: string
+              name:
+                type: string
+              last:
+                type: string
+              email:
+                type: string
+              phone:
+                type: string
+              address:
+                type: string
+              pass:
+                type: string
+              role:
+                type: string
+            required:
+              - alias
+              - name
+              - last
+              - email
+              - phone
+              - address
+              - password
+              - role
+      responses:
+        "200":
+          description: 'Usuario agregado con éxito'
+        "400":
+          description: 'Faltan campos requeridos'
+  /users/findByRole:
+    get:
+      tags: 
+        - "users"
+      summary: "Listar usuarios según su role"
+      description: "Más de un role se puede agregar separando los valores con coma."
+      operationId: "getUsersByRole"
+      produces:
+        - "application/json"
+      parameters:
+        - name: access-token
+          in: header
+          required: true
+          type: string
+          description: "Para validar el rol del usuario que lista. Sólo usuarios con el rol 'admin' pueden listar usuarios."
+        - name: "role"
+          in: "query"
+          description: "Role para filtrar el listado de usuarios"
+          required: true
+          type: "array"
+          items:
+            type: "string"
+            enum:
+            - "user"
+            - "admin"
+            default: "user"
+          collectionFormat: "multi"
+      responses:
+        "200":
+          description: "Operación exitosa"
+        "400":
+          description: "Debe indicar un rol de usuario"
+        "403":
+          description: "Operación no permitida para tu usuario"
+        "404":
+          description: "El rol indicado no existe"
+  /users/{userId}:
+    get:
+      tags:
+      - "users"
+      summary: "Listar usuario según su ID"
+      operationId: "getUserById"
+      produces:
+      - "application/json"
+      parameters:
+        - name: access-token
+          in: header
+          required: true
+          type: string
+          description: "Para validar el rol y el ID del usuario. Sólo usuarios con el rol 'admin' pueden listar usuarios. Y el usuario puede listar sus propios datos."
+        - name: "userId"
+          in: "path"
+          description: "ID del usuario a buscar"
+          required: true
+          type: "integer"
+          format: "int64"
+      responses:
+        "200":
+          description: "Operación exitosa"
+        "400":
+          description: "El ID proporcionado es incorrecto"
+        "403":
+          description: "Operación no permitida para tu usuario"
+        "404":
+          description: "Usuario no encontrado"
+  /users/update/{userId}:
+    put:
+      tags:
+        - "users"
+      summary: "Modificar los datos de un usuario"
+      operationId: "updateUser"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: access-token
+          in: header
+          required: true
+          type: string
+          description: "Para validar el ID del usuario. Un usuario sólo puede modificar sus propios datos."
+        - name: "userId"
+          in: "path"
+          description: "ID del usuario a editar"
+          required: true
+          type: "integer"
+          format: "int64"
+        - name: Body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              last:
+                type: string
+              email:
+                type: string
+              phone:
+                type: string
+              address:
+                type: string
+              pass:
+                type: string
+            required:
+              - name
+              - last
+              - email
+              - phone
+              - address
+              - password
+      responses:
+        "200":
+          description: 'Usuario modificado con éxito'
+        "400":
+          description: 'Faltan campos requeridos'
+        "403":
+          description: "Operación no permitida"
+        "404":
+          description: "Usuario no encontrado"
+  /users/delete/{userId}:
+    delete:
+      tags:
+      - "users"
+      summary: "Eliminar usuario"
+      operationId: "deleteUser"
+      produces:
+      - "application/json"
+      parameters:
+        - name: access-token
+          in: header
+          required: true
+          type: string
+          description: "Para validar el rol y el ID del usuario. Sólo usuarios con el rol 'admin' pueden eliminar usuarios. Y un usuario puede eliminar su propia cuenta."
+        - name: "userId"
+          in: "path"
+          description: "ID del usuario a eliminar"
+          required: true
+          type: "integer"
+          format: "int64"
+      responses:
+        "200":
+          description: "Operación exitosa"
+        "400":
+          description: "El ID proporcionado es incorrecto"
+        "403":
+          description: "Operación no permitida para tu usuario"
+        "404":
+          description: "Usuario no encontrado"
+  /dishes:
+    get:
+      tags: 
+        - "dishes"
+      summary: "Listar todos platos"
+      operationId: "getDishes"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "Operación exitosa"
+  /dishes/{dishId}:
+    get:
+      tags:
+      - "dishes"
+      summary: "Listar plato según su ID"
+      operationId: "getDishById"
+      produces:
+      - "application/json"
+      parameters:
+        - name: "dishId"
+          in: "path"
+          description: "ID del plato a buscar"
+          required: true
+          type: "integer"
+          format: "int64"
+      responses:
+        "200":
+          description: "Operación exitosa"
+        "400":
+          description: "El ID proporcionado es incorrecto"
+        "404":
+          description: "Plato no encontrado"
+  /dishes/add:
+    post:
+      tags:
+        - "dishes"
+      summary: "Agregar un nuevo plato"
+      operationId: "addDish"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: access-token
+          in: header
+          required: true
+          type: string
+          description: "Para validar el rol del usuario. Sólo un usuario con el rol admin puede agregar platos."
+        - name: Body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              desc:
+                type: string
+              price:
+                type: number
+              availability:
+                type: string
+            required:
+              - name
+              - desc
+              - price
+              - availability
+      responses:
+        "200":
+          description: 'Plato agregado con éxito'
+        "400":
+          description: 'Faltan campos requeridos'
+  /dishes/update/{dishId}:
+    put:
+      tags:
+        - "dishes"
+      summary: "Modificar los datos de un plato"
+      operationId: "updateDish"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: access-token
+          in: header
+          required: true
+          type: string
+          description: "Para validar el rol del usuario. Sólo un usuario con el rol admin puede modificar platos."
+        - name: "dishId"
+          in: "path"
+          description: "ID del plato a editar"
+          required: true
+          type: "integer"
+          format: "int64"
+        - name: Body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              desc:
+                type: string
+              price:
+                type: number
+              availability:
+                type: string
+            required:
+              - name
+              - desc
+              - price
+              - availability
+      responses:
+        "200":
+          description: 'Plato modificado con éxito'
+        "400":
+          description: 'Faltan campos requeridos'
+        "403":
+          description: "Operación no permitida"
+        "404":
+          description: "Plato no encontrado"
+  /dishes/delete/{dishId}:
+    delete:
+      tags:
+      - "dishes"
+      summary: "Eliminar plato"
+      operationId: "deleteDish"
+      produces:
+      - "application/json"
+      parameters:
+        - name: access-token
+          in: header
+          required: true
+          type: string
+          description: "Para validar el rol del usuario. Sólo un usuario con el rol admin puede eliminar platos."
+        - name: "dishId"
+          in: "path"
+          description: "ID del plato a eliminar"
+          required: true
+          type: "integer"
+          format: "int64"
+      responses:
+        "200":
+          description: "Operación exitosa"
+        "400":
+          description: "El ID proporcionado es incorrecto"
+        "403":
+          description: "Operación no permitida para tu usuario"
+        "404":
+          description: "Plato no encontrado"
+  /orders:
+    get:
+      tags: 
+        - "orders"
+      summary: "Listar todas las órdenes"
+      operationId: "getOrders"
+      produces:
+        - "application/json"
+      parameters:
+        - name: access-token
+          in: header
+          required: true
+          type: string
+          description: "Para validar el rol del usuario. Sólo un usuario con el rol admin puede listar todas las órdenes."
+      responses:
+        "200":
+          description: "Operación exitosa"
+        "403":
+          description: "Operación no permitida para tu usuario"
+  /orders/{orderId}:
+    get:
+      tags:
+      - "orders"
+      summary: "Ver detalle de orden según su ID"
+      operationId: "getOrderById"
+      produces:
+      - "application/json"
+      parameters:
+        - name: access-token
+          in: header
+          required: true
+          type: string
+          description: "Para validar el rol y el ID del usuario. Sólo un usuario con el rol admin puede listar una orden o un usuario puede ver el detalle de su propia orden."
+        - name: "orderId"
+          in: "path"
+          description: "ID de la orden a listar"
+          required: true
+          type: "integer"
+          format: "int64"
+      responses:
+        "200":
+          description: "Operación exitosa"
+        "400":
+          description: "El ID proporcionado es incorrecto"
+        "404":
+          description: "Orden no encontrada"
+  /orders/add:
+    post:
+      tags:
+        - "orders"
+      summary: "Agregar una nueva orden"
+      operationId: "addOrder"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: access-token
+          in: header
+          required: true
+          type: string
+          description: "Para validar el ID del usuario."
+        - name: Body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              userID:
+                type: number
+              dateTime:
+                type: string
+              dishes:
+                type: array
+                items:
+                  properties:
+                    dishID: 
+                      type: number
+                    quantity: 
+                      type: number
+                    unitPrice: 
+                      type: number
+              status:
+                type: string
+                enum:
+                  - "nuevo"
+                  - "confirmado"
+                  - "preparando"
+                  - "enviando"
+                  - "cancelado"
+                  - "entregado"
+                default: "nuevo"
+              paymentMethod:
+                type: string
+                enum:
+                  - "cash"
+                  - "credit"
+                  - "debit"
+                default: "cash"
+              ammount:
+                type: number
+              comments:
+                type: string
+              address:
+                type: string
+              phone:
+                type: string
+            required:
+              - userID
+              - dateTime
+              - dishes
+              - status
+              - paymentMethod
+              - ammount
+              - comments
+              - address
+              - phone
+      responses:
+        "200":
+          description: 'Plato agregado con éxito'
+        "400":
+          description: 'Faltan campos requeridos'
+  /orders/update/{orderId}:
+    put:
+      tags:
+        - "orders"
+      summary: "Modificar los datos de una orden"
+      operationId: "updateOrder"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: access-token
+          in: header
+          required: true
+          type: string
+          description: "Para validar el rol del usuario. Sólo un usuario con el rol admin puede modificar una orden."
+        - name: "orderId"
+          in: "path"
+          description: "ID de la orden a editar"
+          required: true
+          type: "integer"
+          format: "int64"
+        - name: Body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              userID:
+                type: number
+              dateTime:
+                type: string
+              dishes:
+                type: array
+                items:
+                  properties:
+                    dishID: 
+                      type: number
+                    quantity: 
+                      type: number
+                    unitPrice: 
+                      type: number
+              status:
+                type: string
+                enum:
+                  - "nuevo"
+                  - "confirmado"
+                  - "preparando"
+                  - "enviando"
+                  - "cancelado"
+                  - "entregado"
+                default: "nuevo"
+              paymentMethod:
+                type: string
+                enum:
+                  - "cash"
+                  - "credit"
+                  - "debit"
+                default: "cash"
+              ammount:
+                type: number
+              comments:
+                type: string
+              address:
+                type: string
+              phone:
+                type: string
+            required:
+              - userID
+              - dateTime
+              - dishes
+              - status
+              - paymentMethod
+              - ammount
+              - comments
+              - address
+              - phone
+      responses:
+        "200":
+          description: 'Orden modificada con éxito'
+        "400":
+          description: 'Faltan campos requeridos'
+        "403":
+          description: "Operación no permitida"
+        "404":
+          description: "Orden no encontrada"
+  /orders/delete/{orderId}:
+    delete:
+      tags:
+      - "orders"
+      summary: "Eliminar orden"
+      operationId: "deleteOrder"
+      produces:
+      - "application/json"
+      parameters:
+        - name: access-token
+          in: header
+          required: true
+          type: string
+          description: "Para validar el rol del usuario. Sólo un usuario con el rol admin puede eliminar una orden."
+        - name: "orderId"
+          in: "path"
+          description: "ID de la orden a eliminar"
+          required: true
+          type: "integer"
+          format: "int64"
+      responses:
+        "200":
+          description: "Operación exitosa"
+        "400":
+          description: "El ID proporcionado es incorrecto"
+        "403":
+          description: "Operación no permitida para tu usuario"
+        "404":
+          description: "Orden no encontrada"
