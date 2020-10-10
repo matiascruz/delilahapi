@@ -76,11 +76,11 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: access-token
+        - name: Authorization
           in: header
           required: true
           type: string
-          description: "Para validar el rol del usuario que lista. Sólo usuarios con el rol 'admin' pueden listar usuarios."
+          description: "Bearer token generado por JWT para validar el rol del usuario que lista. Sólo usuarios con el rol 'admin' pueden listar usuarios."
         - name: "role"
           in: "query"
           description: "Role para filtrar el listado de usuarios"
@@ -111,11 +111,11 @@ paths:
       produces:
       - "application/json"
       parameters:
-        - name: access-token
+        - name: Authorization
           in: header
           required: true
           type: string
-          description: "Para validar el rol y el ID del usuario. Sólo usuarios con el rol 'admin' pueden listar usuarios. Y el usuario puede listar sus propios datos."
+          description: "Bearer token generado por JWT para validar el rol y el ID del usuario. Sólo usuarios con el rol 'admin' pueden listar usuarios. Y el usuario puede listar sus propios datos."
         - name: "userId"
           in: "path"
           description: "ID del usuario a buscar"
@@ -142,11 +142,11 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: access-token
+        - name: Authorization
           in: header
           required: true
           type: string
-          description: "Para validar el ID del usuario. Un usuario sólo puede modificar sus propios datos."
+          description: "Bearer token generado por JWT para validar el ID del usuario. Un usuario sólo puede modificar sus propios datos."
         - name: "userId"
           in: "path"
           description: "ID del usuario a editar"
@@ -196,11 +196,11 @@ paths:
       produces:
       - "application/json"
       parameters:
-        - name: access-token
+        - name: Authorization
           in: header
           required: true
           type: string
-          description: "Para validar el rol y el ID del usuario. Sólo usuarios con el rol 'admin' pueden eliminar usuarios. Y un usuario puede eliminar su propia cuenta."
+          description: "Bearer token generado por JWT para validar el rol y el ID del usuario. Sólo usuarios con el rol 'admin' pueden eliminar usuarios. Y un usuario puede eliminar su propia cuenta."
         - name: "userId"
           in: "path"
           description: "ID del usuario a eliminar"
@@ -302,11 +302,11 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: access-token
+        - name: Authorization
           in: header
           required: true
           type: string
-          description: "Para validar el rol del usuario. Sólo un usuario con el rol admin puede modificar platos."
+          description: "Bearer token generado por JWT para validar el rol del usuario. Sólo un usuario con el rol admin puede modificar platos."
         - name: "dishId"
           in: "path"
           description: "ID del plato a editar"
@@ -350,11 +350,11 @@ paths:
       produces:
       - "application/json"
       parameters:
-        - name: access-token
+        - name: Authorization
           in: header
           required: true
           type: string
-          description: "Para validar el rol del usuario. Sólo un usuario con el rol admin puede eliminar platos."
+          description: "Bearer token generado por JWT para validar el rol del usuario. Sólo un usuario con el rol admin puede eliminar platos."
         - name: "dishId"
           in: "path"
           description: "ID del plato a eliminar"
@@ -379,11 +379,11 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: access-token
+        - name: Authorization
           in: header
           required: true
           type: string
-          description: "Para validar el rol del usuario. Sólo un usuario con el rol admin puede listar todas las órdenes."
+          description: "Bearer token generado por JWT para validar el rol del usuario. Sólo un usuario con el rol admin puede listar todas las órdenes."
       responses:
         "200":
           description: "Operación exitosa"
@@ -398,11 +398,11 @@ paths:
       produces:
       - "application/json"
       parameters:
-        - name: access-token
+        - name: Authorization
           in: header
           required: true
           type: string
-          description: "Para validar el rol y el ID del usuario. Sólo un usuario con el rol admin puede listar una orden o un usuario puede ver el detalle de su propia orden."
+          description: "Bearer token generado por JWT para validar el rol y el ID del usuario. Sólo un usuario con el rol admin puede listar una orden o un usuario puede ver el detalle de su propia orden."
         - name: "orderId"
           in: "path"
           description: "ID de la orden a listar"
@@ -427,11 +427,11 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: access-token
+        - name: Authorization
           in: header
           required: true
           type: string
-          description: "Para validar el ID del usuario."
+          description: "Bearer token generado por JWT para validar el ID del usuario."
         - name: Body
           in: body
           required: true
@@ -503,11 +503,11 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: access-token
+        - name: Authorization
           in: header
           required: true
           type: string
-          description: "Para validar el rol del usuario. Sólo un usuario con el rol admin puede modificar una orden."
+          description: "Bearer token generado por JWT para validar el rol del usuario. Sólo un usuario con el rol admin puede modificar una orden."
         - name: "orderId"
           in: "path"
           description: "ID de la orden a editar"
@@ -587,11 +587,11 @@ paths:
       produces:
       - "application/json"
       parameters:
-        - name: access-token
+        - name: Authorization
           in: header
           required: true
           type: string
-          description: "Para validar el rol del usuario. Sólo un usuario con el rol admin puede eliminar una orden."
+          description: "Bearer token generado por JWT para validar el rol del usuario. Sólo un usuario con el rol admin puede eliminar una orden."
         - name: "orderId"
           in: "path"
           description: "ID de la orden a eliminar"
