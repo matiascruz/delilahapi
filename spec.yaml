@@ -258,11 +258,11 @@ paths:
       produces:
         - "application/json"
       parameters:
-        - name: access-token
+        - name: Authorization
           in: header
           required: true
           type: string
-          description: "Para validar el rol del usuario. Sólo un usuario con el rol admin puede agregar platos."
+          description: "Bearer token generado por JWT para validar el rol del usuario. Sólo un usuario con el rol admin puede agregar platos."
         - name: Body
           in: body
           required: true
@@ -287,6 +287,8 @@ paths:
           description: 'Plato agregado con éxito'
         "400":
           description: 'Faltan campos requeridos'
+        "403":
+          description: "Operación no permitida"
   /dishes/update/{dishId}:
     put:
       tags:
