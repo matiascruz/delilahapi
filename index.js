@@ -14,6 +14,20 @@ const firma = "Tokenizador2020";
 // Middleware BodyParser    
 app.use(bodyparser.json());
 
+// Middleware para validar usuario
+const validarUsuario = (req, res, next) => {
+    try {
+            const token = req.headers.authorization.split(' ')[1];
+            const verificarToken = jwt.verify(token, firma);
+            if(verificarToken) {
+                req.validUser = verificarToken;
+                return next();
+            }
+        } catch(err) {
+            res.json({error: 'Error al validar usuario. Falta el token de autorización.'});
+        }
+};
+
 // Conexión a la DB
 const mysql = require('mysql'); 
 const e = require('express');
@@ -46,6 +60,7 @@ con.connect(function(err) {
             let sqlCheckAlias = "SELECT user_alias FROM users WHERE user_alias = '"+userAlias+"'";
             con.query(sqlCheckAlias, function (err, result) {
                 if (err) throw err;
+                console.log(result);
                 if(result != '') {
                     // userAlias ocupado
                     res.statusCode = 400;
@@ -67,8 +82,36 @@ con.connect(function(err) {
             res.json({error: 'Faltan campos requeridos.'});
         }
     });
+    
+    // Eliminar usuario
+    app.delete('/users/delete/:userId', validarUsuario, (req, res) => {
+        // Obtengo el user role y el ID del token de Authorization
+        // Verifico si el usuario es Admin puede borrar cualquier usuario
+        // Si el usuario no es Admin deben coincidir el ID del path con el ID del token para poder proceder
+        let userRole = req.validUser.role;
+        let userIdTk = req.validUser.id;
+        let userIdURL = req.params.userId;
+        if(userRole == 'admin' || userIdTk == userIdURL) {
+            // Puede borrar
+            let sqlDeleteUser = "DELETE FROM users WHERE user_id = '"+userIdURL+"'";
+            con.query(sqlDeleteUser, function (err, result) {
+                if (err) throw err;
+                console.log(result);
+                if(result.affectedRows > 0) {
+                    res.statusCode = 200;
+                    res.json({success: 'Usuario eliminado.'});
+                } else {
+                    res.statusCode = 404;
+                    res.json({error: 'Usuario no encontrado.'}); 
+                }
+            });
+        } else {
+            res.statusCode = 403;
+            res.json({error: 'Operación no permitida para este usuario.'});
+        }
+    });
 
-    // Autenticar Usuario (Agregar al Swagger)
+    // Autenticar Usuario
     app.post('/login', (req, res) => {
         let userAlias = req.body.alias;
         let userPass = req.body.pass;
@@ -117,23 +160,8 @@ con.connect(function(err) {
         }
     });
 
-    // Middleware para validar usuario
-    const validarUsuario = (req, res, next) => {
-        try {
-                const token = req.headers.authorization.split(' ')[1];
-                const verificarToken = jwt.verify(token, firma);
-                if(verificarToken) {
-                    req.validUser = verificarToken;
-                    return next();
-                }
-            } catch(err) {
-                res.json({error: 'Error al validar usuario. Falta el token de autorización.'});
-            }
-    };
-    // Hacer el login
-    // Hacer el logout
+    //TODOLIST
     // Gets
-    // Delete
     // Update
 
 // DISHES ENDPOINTS
