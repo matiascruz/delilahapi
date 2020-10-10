@@ -14,6 +14,8 @@ tags:
   description: "Listado y ABM de platos"
 - name: "orders"
   description: "Listado y operación con órdenes"
+- name: "login"
+  description: "Autenticación de usuarios"
 schemes:
 - "http"
 paths:
@@ -605,3 +607,28 @@ paths:
           description: "Operación no permitida para tu usuario"
         "404":
           description: "Orden no encontrada"
+  /login:
+    post:
+      tags:
+      - "login"
+      summary: "Autenticar usuario y obtener JWT para validar en los endpoints que lo requieren"
+      operationId: "loginUser"
+      parameters:
+        - name: Body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              alias:
+                type: string
+              pass:
+                type: string
+            required:
+              - alias
+              - pass
+      responses:
+        "200":
+          description: "Usuario logueado con éxito"
+        "400":
+          description: "Usuario o pass incorrectos"
