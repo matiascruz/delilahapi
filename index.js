@@ -377,10 +377,87 @@ con.connect(function(err) {
     });
 
 // ORDERS ENDPOINTS
+    // Crear orden
+    app.post('/orders/add', validarUsuario, (req, res) => {
+        // Obtengo el user ID del token de Authorization
+        let userIdTk = req.validUser.id;
+        // Obtengo los datos de la orden
+        let orderStatus = req.body.status;
+        let orderPayment = req.body.paymentMethod;
+        let orderAmmount = req.body.ammount;
+        let orderComments = req.body.comments;
+        // Agrego address y phone para dar posibilidad de que un usuario desee enviar un pedido
+        // A una dirección diferente de la que usó para registrarse
+        let orderAddress = req.body.address;
+        let orderPhone = req.body.phone;
+        let orderDishes = req.body.dishes;
 
-/* Para crear una orden, insertar la orden primero en la tabla de ordenes con los datos necesario
-Luego hacer un foreach al detalle de platos y en cada uno hacer un insert en la tabla de detalle
-*/
+        if(orderStatus != '' && orderPayment != '' && orderAmmount != '' && orderAddress != '' && orderPhone != '' && orderDishes != '') {
+            // Primero inserto los datos de la orden en la tabla 'orders'
+            let sqlAddOrder = "INSERT INTO orders (user_id, order_status, order_paymentMethod, order_ammount, order_comments, order_address, order_phone) VALUES ('"+userIdTk+"', '"+orderStatus+"', '"+orderPayment+"', '"+orderAmmount+"', '"+orderComments+"', '"+orderAddress+"', '"+orderPhone+"')";
+            con.query(sqlAddOrder, function (err, result) {
+                if (err) throw err;
+                let orderId = result.insertId;
+                // Creo un array para el detalle de la orden
+                let orderDet = [];
+                // Recorro orderDishes para armar el array con el detalle de platos para hacer el query
+                orderDishes.forEach(element => {
+                    orderDet.push([orderId, element.dishId, element.quantity, element.unitPrice]);
+                });
+                // Inserto el detalle de platos en la tabla "orders_det"
+                let sqlOrderDet = "INSERT INTO orders_det (order_id, dish_id, dish_quantity, dish_price) VALUES ?";
+                con.query(sqlOrderDet, [orderDet], function (err, resultDet) {
+                    if (err) throw err;
+                    res.statusCode = 200;
+                    res.json({success: 'Orden creada con éxito.'});
+                });
+            });
+        } else {
+            res.statusCode = 400;
+            res.json({error: 'Faltan campos requeridos para crear una orden.'});
+        }
+    });
+
+    // Listar todas las órdenes
+    app.get('/orders', validarUsuario, (req, res) => {
+        // Obtengo el user role del token de Authorization
+        // Verifico si el usuario es Admin, puede listar las ordenes
+        let userRole = req.validUser.role;
+        if(userRole == 'admin') {
+            let sqlOrders = "SELECT orders.*, users.user_name, users.user_last, users.user_email FROM orders JOIN users ON orders.user_id = users.user_id ORDER BY orders.order_id DESC";
+            con.query(sqlOrders, function (err, result) {
+                if (err) throw err;
+                if(result == '') {
+                    res.statusCode = 200;
+                    res.json({error: 'No hay ordenes cargadas en la base de datos.'});
+                } else {
+                    var ordersListing = [];
+                    var limit = result.length;
+                    var i = 1;
+                    // Entrego el resultado cuando s termina el foreach
+                    function printRes(i, limit) {
+                        if(i == limit) {
+                            res.statusCode = 200;
+                            res.send(ordersListing);
+                        }
+                    }
+                    result.forEach(element => {
+                        let sqlOrderDet = "SELECT orders_det.dish_id, orders_det.dish_quantity, orders_det.dish_price, dishes.dish_name FROM orders_det JOIN dishes ON orders_det.dish_id = dishes.dish_id WHERE orders_det.order_id = '"+element.order_id+"'";
+                        con.query(sqlOrderDet, function (err, resultDet) {
+                            if (err) throw err;
+                            ordersListing.push({"order_id":element.order_id, "order_datetime":element.order_datetime, "order_status":element.order_status, "user_name":element.user_name, "user_last":element.user_last, "user_email":element.user_email, "order_address":element.order_address, "order_phone":element.order_phone, "order_detail":resultDet, "order_ammount":element.order_ammount, "payment_method":element.order_paymentMethod});
+                            printRes(i, limit);
+                            i++;
+                        });
+                    });
+                    
+                }
+            });
+        } else {
+            res.statusCode = 403;
+            res.json({error: 'Operación no permitida para este usuario.'});
+        }
+    });
 
 // Inicio la app
 app.listen(5000, () => console.log("Servidor iniciado..."));
