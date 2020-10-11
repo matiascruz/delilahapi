@@ -491,6 +491,7 @@ paths:
       tags:
         - "orders"
       summary: "Modificar los datos de una orden"
+      description: "A los fines de simplificar el trabajo, para el update se deben enviar todos los campos. Los campos que no se desean modificar se deben enviar con los datos previos para que no cambien. En el front esta tarea se podría realizar enviando al request todos los campos del form de edición (los que cambian y los que no)."
       operationId: "updateOrder"
       consumes:
         - "application/json"

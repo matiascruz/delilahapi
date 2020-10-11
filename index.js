@@ -528,5 +528,69 @@ con.connect(function(err) {
         }
     });
 
+    // Modificar orden
+    /* NOTA:
+        A los fines de simplificar el trabajo, para el update de orden 
+        se deben enviar todos los campos. Los campos que no se desean modificar 
+        se deben enviar con los datos previos para que no cambien. 
+        En el front esta tarea se podría realizar enviando al request todos los 
+        campos del form de edición (los que cambian y los que no).
+
+        NORMALMENTE sólo se va a editar el status del pedido, pero es bueno dejar
+        la flexibilidad por si se necesitan hacer otros cambios como: modificar medio de pago
+        o agregar/quitar productos del pedido y por consiguiente modificar el monto total
+        del pedido.
+    */
+    app.put('/orders/update/:orderId', validarUsuario, (req, res) => {
+        // Obtengo el user role del token de Authorization
+        // Verifico si el usuario es Admin puede borrar una orden
+        let userRole = req.validUser.role;
+        let orderIdUrl = req.params.orderId;
+        if(userRole == 'admin') {
+
+        } else {
+            res.statusCode = 403;
+            res.json({error: 'Operación no permitida para este usuario.'});
+        }
+
+        // Obtengo los datos de la orden
+        let orderStatus = req.body.status;
+        let orderPayment = req.body.paymentMethod;
+        let orderAmmount = req.body.ammount;
+        let orderComments = req.body.comments;
+        let orderAddress = req.body.address;
+        let orderPhone = req.body.phone;
+        let orderDishes = req.body.dishes;
+
+        if(orderStatus != '' && orderPayment != '' && orderAmmount != '' && orderAddress != '' && orderPhone != '' && orderDishes != '') {
+            // Primero actualizo los datos de la orden en la tabla 'orders'
+            let sqlEditOrder = "UPDATE orders SET order_status = '"+orderStatus+"', order_paymentMethod = '"+orderPayment+"', order_ammount = '"+orderAmmount+"', order_comments = '"+orderComments+"', order_address = '"+orderAddress+"', order_phone = '"+orderPhone+"' WHERE order_id = '"+orderIdUrl+"'";
+            con.query(sqlEditOrder, function (err, result) {
+                if (err) throw err;
+                // Elimino el detalle de platos de la orden para reemplazarlo con los datos nuevos hayan cambiado o no
+                let sqlClearDet = "DELETE FROM orders_det WHERE order_id = '"+orderIdUrl+"'";
+                con.query(sqlClearDet, function (err, result) {
+                    if (err) throw err;
+                    // Creo un nuevo array para el detalle de la orden
+                    let orderDet = [];
+                    // Recorro orderDishes para armar el array con el detalle de platos para hacer el query
+                    orderDishes.forEach(element => {
+                        orderDet.push([orderIdUrl, element.dishId, element.quantity, element.unitPrice]);
+                    });
+                    // Inserto el detalle de platos en la tabla "orders_det"
+                    let sqlOrderDet = "INSERT INTO orders_det (order_id, dish_id, dish_quantity, dish_price) VALUES ?";
+                    con.query(sqlOrderDet, [orderDet], function (err, resultDet) {
+                        if (err) throw err;
+                        res.statusCode = 200;
+                        res.json({success: 'Orden actualizada con éxito.'});
+                    });
+                });
+            });
+        } else {
+            res.statusCode = 400;
+            res.json({error: 'Faltan campos requeridos para actualizar la orden.'});
+        }
+    });
+
 // Inicio la app
 app.listen(5000, () => console.log("Servidor iniciado..."));
