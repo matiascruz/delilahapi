@@ -376,5 +376,11 @@ con.connect(function(err) {
         }
     });
 
+// ORDERS ENDPOINTS
+
+/* Para crear una orden, insertar la orden primero en la tabla de ordenes con los datos necesario
+Luego hacer un foreach al detalle de platos y en cada uno hacer un insert en la tabla de detalle
+*/
+
 // Inicio la app
 app.listen(5000, () => console.log("Servidor iniciado..."));
