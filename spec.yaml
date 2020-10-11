@@ -134,7 +134,7 @@ paths:
       tags:
         - "users"
       summary: "Modificar los datos de un usuario"
-      description: "A los fines de simplificar el trabajo, para el update de usuario se deben enviar todos los campos. Los campos que no se desean modificar se deben enviar con los datos previos para que no cambien. En el front esta tarea se podría realizar en el front enviando al request todos los campos del form de edición (los que cambian y los que no)."
+      description: "A los fines de simplificar el trabajo, para el update de usuario se deben enviar todos los campos. Los campos que no se desean modificar se deben enviar con los datos previos para que no cambien. En el front esta tarea se podría realizar enviando al request todos los campos del form de edición (los que cambian y los que no)."
       operationId: "updateUser"
       consumes:
         - "application/json"
@@ -212,7 +212,7 @@ paths:
     get:
       tags: 
         - "dishes"
-      summary: "Listar todos platos"
+      summary: "Listar todos los platos"
       operationId: "getDishes"
       produces:
         - "application/json"
@@ -288,6 +288,7 @@ paths:
       tags:
         - "dishes"
       summary: "Modificar los datos de un plato"
+      description: "A los fines de simplificar el trabajo, para el update se deben enviar todos los campos. Los campos que no se desean modificar se deben enviar con los datos previos para que no cambien. En el front esta tarea se podría realizar enviando al request todos los campos del form de edición (los que cambian y los que no)."
       operationId: "updateDish"
       consumes:
         - "application/json"

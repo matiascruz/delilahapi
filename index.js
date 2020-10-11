@@ -262,6 +262,37 @@ con.connect(function(err) {
     });
 
 // DISHES ENDPOINTS
+    // Listar todos los platos
+    app.get('/dishes', (req, res) => {
+        let sqlDishes = "SELECT * FROM dishes";
+        con.query(sqlDishes, function (err, result) {
+            if (err) throw err;
+            if(result == '') {
+                res.statusCode = 200;
+                res.json({error: 'No hay platos cargados en la base de datos.'});
+            } else {
+                res.statusCode = 200;
+                res.send(result);
+            }
+        });
+    });
+
+    // Listar un plato según ID
+    app.get('/dishes/:dishId', (req, res) => {
+        let dishIdURL = req.params.dishId;
+        let sqlDishes = "SELECT * FROM dishes WHERE dish_id = '"+dishIdURL+"'";
+        con.query(sqlDishes, function (err, result) {
+            if (err) throw err;
+            if(result == '') {
+                res.statusCode = 404;
+                res.json({error: 'Plato no encontrado.'});
+            } else {
+                res.statusCode = 200;
+                res.send(result);
+            }
+        });
+    });
+
     // Crear plato
     app.post('/dishes/add', validarUsuario, (req, res) => {
         // Obtengo el user role del token de Authorization y verifico el rol
@@ -280,6 +311,68 @@ con.connect(function(err) {
                 res.statusCode = 200;
                 res.json({success: 'Plato agregado con éxito.'});
             });
+        }
+    });
+
+    // Eliminar plato
+    app.delete('/dishes/delete/:dishId', validarUsuario, (req, res) => {
+        // Obtengo el user role del token de Authorization
+        // Verifico si el usuario es Admin puede borrar cualquier plato
+        let userRole = req.validUser.role;
+        let dishIdURL = req.params.dishId;
+        if(userRole == 'admin') {
+            // Puede borrar
+            let sqlDeleteDish = "DELETE FROM dishes WHERE dish_id = '"+dishIdURL+"'";
+            con.query(sqlDeleteDish, function (err, result) {
+                if (err) throw err;
+                if(result.affectedRows > 0) {
+                    res.statusCode = 200;
+                    res.json({success: 'Plato eliminado.'});
+                } else {
+                    res.statusCode = 404;
+                    res.json({error: 'Plato no encontrado.'}); 
+                }
+            });
+        } else {
+            res.statusCode = 403;
+            res.json({error: 'Operación no permitida para este usuario.'});
+        }
+    });
+
+    // Editar Plato
+    /* NOTA:
+        A los fines de simplificar el trabajo, para el update de plato 
+        se deben enviar todos los campos. Los campos que no se desean modificar 
+        se deben enviar con los datos previos para que no cambien. 
+        En el front esta tarea se podría realizar enviando al request todos los 
+        campos del form de edición (los que cambian y los que no).
+    */
+    app.put('/dishes/update/:dishId', validarUsuario, (req, res) => {
+        // Obtengo el user role del token de Authorization
+        // Verifico si el usuario es Admin puede editar cualquier plato
+        let userRole = req.validUser.role;
+        let dishIdURL = req.params.dishId;
+        
+        if(userRole == 'admin') {
+            // Puede editar
+            let dishName = req.body.name;
+            let dishDesc = req.body.desc;
+            let dishPrice = req.body.price;
+            let dishAvailability = req.body.availability;
+            let sqlUpdateDish = "UPDATE dishes SET dish_name = '"+dishName+"', dish_desc = '"+dishDesc+"', dish_price = '"+dishPrice+"', dish_availability = '"+dishAvailability+"' WHERE dish_id = '"+dishIdURL+"'";
+                con.query(sqlUpdateDish, function (err, result) {
+                    if (err) throw err;
+                    if(result.affectedRows > 0) {
+                        res.statusCode = 200;
+                        res.json({success: 'Plato modificado.'});
+                    } else {
+                        res.statusCode = 404;
+                        res.json({error: 'Plato no encontrado.'}); 
+                    }
+                });
+        } else {
+            res.statusCode = 403;
+            res.json({error: 'Operación no permitida para este usuario.'});
         }
     });
 
