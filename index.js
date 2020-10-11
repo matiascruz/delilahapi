@@ -60,7 +60,6 @@ con.connect(function(err) {
             let sqlCheckAlias = "SELECT user_alias FROM users WHERE user_alias = '"+userAlias+"'";
             con.query(sqlCheckAlias, function (err, result) {
                 if (err) throw err;
-                console.log(result);
                 if(result != '') {
                     // userAlias ocupado
                     res.statusCode = 400;
@@ -96,7 +95,6 @@ con.connect(function(err) {
             let sqlDeleteUser = "DELETE FROM users WHERE user_id = '"+userIdURL+"'";
             con.query(sqlDeleteUser, function (err, result) {
                 if (err) throw err;
-                console.log(result);
                 if(result.affectedRows > 0) {
                     res.statusCode = 200;
                     res.json({success: 'Usuario eliminado.'});
@@ -111,6 +109,109 @@ con.connect(function(err) {
         }
     });
 
+    // Editar Usuario
+    /* NOTA:
+        A los fines de simplificar el trabajo, para el update de usuario 
+        se deben enviar todos los campos. Los campos que no se desean modificar 
+        se deben enviar con los datos previos para que no cambien. 
+        En el front esta tarea se podría realizar enviando al request todos los 
+        campos del form de edición (los que cambian y los que no).
+
+        Acá sólo estoy haciendo 2 consultas: si cambia el pass mando el pass nuevo 
+        hasheado. Y sino cambia el pass no mando ese update en la consulta a la DB.
+    */
+    app.put('/users/update/:userId', validarUsuario, (req, res) => {
+        // Obtengo el user ID del token de Authorization
+        // Verifico que el ID del parametro coincida con el del token
+        let userIdTk = req.validUser.id;
+        let userIdURL = req.params.userId;
+        if(userIdTk == userIdURL) {
+            // Puede editar
+            let userName = req.body.name;
+            let userLast = req.body.last;
+            let userEmail = req.body.email;
+            let userPhone = req.body.phone;
+            let userAddress = req.body.address;
+            let userPass = req.body.pass;
+            // Si modifica pass, encripto con bcrypt
+            if(userPass != '') {
+                // Encripto el password con bcrypt
+                const hashedPass = bcrypt.hashSync(userPass, saltRounds);
+                let sqlUpdateUser = "UPDATE users SET user_name = '"+userName+"', user_last = '"+userLast+"', user_email = '"+userEmail+"', user_phone = '"+userPhone+"', user_address = '"+userAddress+"', user_pass = '"+hashedPass+"' WHERE user_id = '"+userIdURL+"'";
+                con.query(sqlUpdateUser, function (err, result) {
+                    if (err) throw err;
+                    res.statusCode = 200;
+                    res.json({success: 'Usuario modificado.'});
+                });
+            } else {
+                let sqlUpdateUser = "UPDATE users SET user_name = '"+userName+"', user_last = '"+userLast+"', user_email = '"+userEmail+"', user_phone = '"+userPhone+"', user_address = '"+userAddress+"' WHERE user_id = '"+userIdURL+"'";
+                con.query(sqlUpdateUser, function (err, result) {
+                    if (err) throw err;
+                    res.statusCode = 200;
+                    res.json({success: 'Usuario modificado.'});
+                });
+            }
+        } else {
+            res.statusCode = 403;
+            res.json({error: 'Operación no permitida para este usuario.'});
+        }
+    });
+
+    // Listar usuarios según rol
+    app.get('/users/findByRole', validarUsuario, (req, res) => {
+        // Obtengo el user role del token de Authorization y verifico el rol
+        let userRole = req.validUser.role;
+        if(userRole != 'admin') {
+            res.statusCode = 403;
+            res.json({error: 'Operación no permitida para este usuario.'});
+        } else {
+            const queryRole = req.query.role;
+            if(!queryRole){
+                res.statusCode = 400;
+                res.json({error: 'Debes indicar un rol de usuario como query params.'});
+            } else {
+                let sqlGetUsers = "SELECT user_id, user_alias, user_name, user_last, user_email, user_phone, user_address, user_role FROM users WHERE user_role = '"+queryRole+"'";
+                con.query(sqlGetUsers, function (err, result) {
+                    if (err) throw err;
+                    if(result == '') {
+                        res.statusCode = 404;
+                        res.json({error: 'El rol consultado no existe.'});
+                    } else {
+                        res.statusCode = 200;
+                        res.send(result);
+                    }
+                });
+            }
+        }
+    });
+
+    // Listar un usuario según su ID
+    app.get('/users/:userId', validarUsuario, (req, res) => {
+        // Obtengo el user ID del token de Authorization
+        // Verifico que el ID del parametro coincida con el del token
+        let userIdTk = req.validUser.id;
+        let userIdURL = req.params.userId;
+        if(userIdTk == userIdURL) {
+            let sqlGetUser = "SELECT user_id, user_alias, user_name, user_last, user_email, user_phone, user_address, user_role FROM users WHERE user_id = '"+userIdURL+"'";
+            con.query(sqlGetUser, function (err, result) {
+                if (err) throw err;
+                if(result == '') {
+                    /* En rigo este caso no debería presentarse ya que al validar el ID de usuario
+                    con el token, si el token es válido es porque el ID existe en DB, de lo contrario
+                    no podría haberse logueado para obtener el token */
+                    res.statusCode = 404;
+                    res.json({error: 'Usuario no encontrado.'});
+                } else {
+                    res.statusCode = 200;
+                    res.send(result);
+                }
+            });
+        } else {
+            res.statusCode = 403;
+            res.json({error: 'Operación no permitida para este usuario.'});
+        }        
+    });
+    
     // Autenticar Usuario
     app.post('/login', (req, res) => {
         let userAlias = req.body.alias;
@@ -159,10 +260,6 @@ con.connect(function(err) {
             res.json({error: 'Faltan campos requeridos.'});
         }
     });
-
-    //TODOLIST
-    // Gets
-    // Update
 
 // DISHES ENDPOINTS
     // Crear plato

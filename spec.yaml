@@ -70,8 +70,7 @@ paths:
     get:
       tags: 
         - "users"
-      summary: "Listar usuarios según su role"
-      description: "Más de un role se puede agregar separando los valores con coma."
+      summary: "Listar usuarios según su rol"
       operationId: "getUsersByRole"
       produces:
         - "application/json"
@@ -91,7 +90,6 @@ paths:
             enum:
             - "user"
             - "admin"
-            default: "user"
           collectionFormat: "multi"
       responses:
         "200":
@@ -136,6 +134,7 @@ paths:
       tags:
         - "users"
       summary: "Modificar los datos de un usuario"
+      description: "A los fines de simplificar el trabajo, para el update de usuario se deben enviar todos los campos. Los campos que no se desean modificar se deben enviar con los datos previos para que no cambien. En el front esta tarea se podría realizar en el front enviando al request todos los campos del form de edición (los que cambian y los que no)."
       operationId: "updateUser"
       consumes:
         - "application/json"
@@ -171,13 +170,6 @@ paths:
                 type: string
               pass:
                 type: string
-            required:
-              - name
-              - last
-              - email
-              - phone
-              - address
-              - password
       responses:
         "200":
           description: 'Usuario modificado con éxito'
