@@ -407,6 +407,8 @@ paths:
           description: "Operación exitosa"
         "400":
           description: "El ID proporcionado es incorrecto"
+        "403":
+          description: "Operación no permitida para este usuario"
         "404":
           description: "Orden no encontrada"
   /orders/add:

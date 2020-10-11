@@ -459,5 +459,49 @@ con.connect(function(err) {
         }
     });
 
+    // Listar orden por ID
+    app.get('/orders/:orderId', validarUsuario, (req, res) => {
+        // Obtengo el user role y el user ID del token de Authorization
+        // Verifico si el usuario es Admin o si el user ID coincide con el user_id del pedido
+        let userRole = req.validUser.role;
+        let userIdTk = req.validUser.id;
+        let orderIdUrl = req.params.orderId;
+        //if(userRole == 'admin' || userIdTk == userIdURL) {
+        let sqlOrder = "SELECT orders.*, users.user_name, users.user_last, users.user_email FROM orders JOIN users ON orders.user_id = users.user_id WHERE orders.order_id = '"+orderIdUrl+"'";
+        con.query(sqlOrder, function (err, result) {
+            if (err) throw err;
+            if(userRole == 'admin' || result[0].user_id == userIdTk) {
+                if(result == '') {
+                    // En rigor este caso no debería darse
+                    res.statusCode = 404;
+                    res.json({error: 'Orden no encontrada.'});
+                } else {
+                    var ordersListing = [];
+                    var limit = result.length;
+                    var i = 1;
+                    // Entrego el resultado cuando s termina el foreach
+                    function printRes(i, limit) {
+                        if(i == limit) {
+                            res.statusCode = 200;
+                            res.send(ordersListing);
+                        }
+                    }
+                    result.forEach(element => {
+                        let sqlOrderDet = "SELECT orders_det.dish_id, orders_det.dish_quantity, orders_det.dish_price, dishes.dish_name FROM orders_det JOIN dishes ON orders_det.dish_id = dishes.dish_id WHERE orders_det.order_id = '"+element.order_id+"'";
+                        con.query(sqlOrderDet, function (err, resultDet) {
+                            if (err) throw err;
+                            ordersListing.push({"order_id":element.order_id, "order_datetime":element.order_datetime, "order_status":element.order_status, "user_name":element.user_name, "user_last":element.user_last, "user_email":element.user_email, "order_address":element.order_address, "order_phone":element.order_phone, "order_detail":resultDet, "order_ammount":element.order_ammount, "payment_method":element.order_paymentMethod});
+                            printRes(i, limit);
+                            i++;
+                        });
+                    });
+                }
+            } else {
+                res.statusCode = 403;
+                res.json({error: 'Operación no permitida para este usuario.'});
+            }
+        });
+    });
+
 // Inicio la app
 app.listen(5000, () => console.log("Servidor iniciado..."));
