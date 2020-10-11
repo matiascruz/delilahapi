@@ -30,7 +30,6 @@ const validarUsuario = (req, res, next) => {
 
 // Conexión a la DB
 const mysql = require('mysql'); 
-const e = require('express');
 const con = mysql.createConnection({
     host: 'localhost',
     port: '',
