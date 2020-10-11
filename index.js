@@ -504,7 +504,7 @@ con.connect(function(err) {
     });
 
     // Eliminar orden
-    app.delete('/orderes/delete/:orderId', validarUsuario, (req, res) => {
+    app.delete('/orders/delete/:orderId', validarUsuario, (req, res) => {
         // Obtengo el user role del token de Authorization
         // Verifico si el usuario es Admin puede borrar una orden
         let userRole = req.validUser.role;
@@ -512,7 +512,7 @@ con.connect(function(err) {
         if(userRole == 'admin') {
             // Puede borrar
             let sqlDeleteOrder = "DELETE orders, orders_det FROM orders INNER JOIN orders_det ON orders_det.order_id = orders.order_id WHERE orders.order_id = '"+orderIdUrl+"'";
-            con.query(sqlDeleteDish, function (err, result) {
+            con.query(sqlDeleteOrder, function (err, result) {
                 if (err) throw err;
                 if(result.affectedRows > 0) {
                     res.statusCode = 200;
